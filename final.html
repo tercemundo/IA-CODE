@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparador de Inversiones</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        .control-panel {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #f2f2f2;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            th, td {
+                padding: 8px;
+                font-size: 14px;
+            }
+            
+            select {
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Comparación Plazo Fijo vs Dólar</h2>
+        <div class="control-panel">
+            <label for="tasaDolar">Seleccione el aumento del dólar: </label>
+            <select id="tasaDolar" onchange="actualizarTabla()">
+                <option value="0.03">3%</option>
+                <option value="0.06">6%</option>
+                <option value="0.09">9%</option>
+                <option value="0.12">12%</option>
+                <option value="0.15">15%</option>
+            </select>
+        </div>
+        <div id="resultados">
+            <!-- La tabla se insertará aquí -->
+        </div>
+    </div>
+
+    <script>
+        function actualizarTabla() {
+            const capitalInicial = 1000;
+            const tasaPF30 = 0.03;
+            const tasaPF60 = 0.067;
+            const tasaPF90 = 0.06;
+            const tasaDolar90 = parseFloat(document.getElementById('tasaDolar').value);
+            
+            // Cálculos para cada período
+            const pf30 = capitalInicial * (1 + tasaPF30);
+            const pf60 = capitalInicial * (1 + tasaPF60);
+            const pf90 = capitalInicial * (1 + tasaPF90);
+            const dolar90 = capitalInicial * (1 + tasaDolar90);
+            
+            // Formatear números como moneda
+            const formatoMoneda = new Intl.NumberFormat('es-AR', {
+                style: 'currency',
+                currency: 'ARS'
+            });
+
+            let tabla = `
+                <table>
+                    <tr>
+                        <th>Período</th>
+                        <th>Capital Inicial</th>
+                        <th>Plazo Fijo</th>
+                        <th>Dólar</th>
+                    </tr>
+                    <tr>
+                        <td>30 días</td>
+                        <td>${formatoMoneda.format(capitalInicial)}</td>
+                        <td>${formatoMoneda.format(pf30)} (3%)</td>
+                        <td>${formatoMoneda.format(capitalInicial)} (sin variación)</td>
+                    </tr>
+                    <tr>
+                        <td>60 días</td>
+                        <td>${formatoMoneda.format(capitalInicial)}</td>
+                        <td>${formatoMoneda.format(pf60)} (6.7%)</td>
+                        <td>${formatoMoneda.format(capitalInicial)} (sin variación)</td>
+                    </tr>
+                    <tr>
+                        <td>90 días</td>
+                        <td>${formatoMoneda.format(capitalInicial)}</td>
+                        <td>${formatoMoneda.format(pf90)} (6%)</td>
+                        <td>${formatoMoneda.format(dolar90)} (${(tasaDolar90 * 100).toFixed(0)}%)</td>
+                    </tr>
+                </table>`;
+            
+            document.getElementById('resultados').innerHTML = tabla;
+        }
+
+        // Ejecutar la función al cargar la página
+        window.onload = actualizarTabla;
+    </script>
+</body>
+</html>
