@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Comparación Plazo Fijo vs Dólar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .control-panel {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        select {
+            padding: 5px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Comparación Plazo Fijo vs Dólar</h2>
+        <div class="control-panel">
+            <label for="tasaDolar">Seleccione el aumento del dólar: </label>
+            <select id="tasaDolar" onchange="actualizarTabla()">
+                <option value="0.03">3%</option>
+                <option value="0.06">6%</option>
+                <option value="0.09">9%</option>
+                <option value="0.12">12%</option>
+                <option value="0.15">15%</option>
+            </select>
+        </div>
+        <div id="resultados">
+            <!-- La tabla se insertará aquí -->
+        </div>
+    </div>
+
+    <script>
+        function actualizarTabla() {
+            const capitalInicial = 1000;
+            
+            // Tasas Plazo Fijo
+            const tasaPF30 = 0.03;  // 3% a 30 días
+            const tasaPF60 = 0.067; // 6.7% a 60 días
+            const tasaPF90 = 0.06;  // 6% a 90 días
+            
+            // Obtener la tasa del dólar seleccionada
+            const tasaDolar90 = parseFloat(document.getElementById('tasaDolar').value);
+            
+            // Cálculos
+            const pf30 = capitalInicial * (1 + tasaPF30);
+            const pf60 = capitalInicial * (1 + tasaPF60);
+            const pf90 = capitalInicial * (1 + tasaPF90);
+            const dolar90 = capitalInicial * (1 + tasaDolar90);
+            
+            let tabla = `
+                <table>
+                    <tr>
+                        <th>Período</th>
+                        <th>Capital Inicial</th>
+                        <th>Plazo Fijo</th>
+                        <th>Dólar</th>
+                    </tr>
+                    <tr>
+                        <td>30 días</td>
+                        <td>$${capitalInicial}</td>
+                        <td>$${pf30.toFixed(2)} (3%)</td>
+                        <td>$${capitalInicial} (sin variación)</td>
+                    </tr>
+                    <tr>
+                        <td>60 días</td>
+                        <td>$${capitalInicial}</td>
+                        <td>$${pf60.toFixed(2)} (6.7%)</td>
+                        <td>$${capitalInicial} (sin variación)</td>
+                    </tr>
+                    <tr>
+                        <td>90 días</td>
+                        <td>$${capitalInicial}</td>
+                        <td>$${pf90.toFixed(2)} (6%)</td>
+                        <td>$${dolar90.toFixed(2)} (${(tasaDolar90 * 100).toFixed(0)}%)</td>
+                    </tr>
+                </table>`;
+            
+            document.getElementById('resultados').innerHTML = tabla;
+        }
+
+        // Ejecutar la función al cargar la página
+        window.onload = actualizarTabla;
+    </script>
+</body>
+</html>

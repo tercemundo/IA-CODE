@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora de Cuotas con Inflación y Valor Presente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            padding: 5px;
+            width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .negative {
+            color: red;
+        }
+        .positive {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calculadora de Cuotas con Inflación y Valor Presente</h1>
+    
+    <div class="input-group">
+        <label for="precio">Precio del producto:</label>
+        <input type="number" id="precio" value="100000">
+    </div>
+
+    <div class="input-group">
+        <label for="inflacion">Inflación mensual (%):</label>
+        <input type="number" id="inflacion" value="10">
+    </div>
+
+    <div id="tasasCuotas">
+        <h3>Tasas de interés por cuota (%)</h3>
+        <div class="input-group">
+            <label for="tasa1">Tasa Cuota 1:</label>
+            <input type="number" id="tasa1" value="5">
+        </div>
+        <div class="input-group">
+            <label for="tasa2">Tasa Cuota 2:</label>
+            <input type="number" id="tasa2" value="6">
+        </div>
+        <div class="input-group">
+            <label for="tasa3">Tasa Cuota 3:</label>
+            <input type="number" id="tasa3" value="7">
+        </div>
+        <div class="input-group">
+            <label for="tasa4">Tasa Cuota 4:</label>
+            <input type="number" id="tasa4" value="8">
+        </div>
+        <div class="input-group">
+            <label for="tasa5">Tasa Cuota 5:</label>
+            <input type="number" id="tasa5" value="9">
+        </div>
+        <div class="input-group">
+            <label for="tasa6">Tasa Cuota 6:</label>
+            <input type="number" id="tasa6" value="10">
+        </div>
+    </div>
+
+    <button onclick="calcular()">Calcular</button>
+
+    <div id="resultados" class="results"></div>
+
+    <script>
+        function calcular() {
+            const precio = parseFloat(document.getElementById('precio').value);
+            const inflacionMensual = parseFloat(document.getElementById('inflacion').value) / 100;
+            const numeroCuotas = 6;
+            
+            // Obtener tasas de interés para cada cuota
+            const tasasCuota = [];
+            for(let i = 1; i <= numeroCuotas; i++) {
+                tasasCuota.push(parseFloat(document.getElementById(`tasa${i}`).value) / 100);
+            }
+
+            // Calculamos el valor de la cuota base
+            const cuotaBase = precio / numeroCuotas;
+
+            let totalPagar = 0;
+            let totalValorPresente = 0;
+            let tabla = '<h2>Detalle de cuotas</h2>';
+            tabla += '<table>';
+            tabla += `<tr>
+                <th>Mes</th>
+                <th>Cuota Base</th>
+                <th>Tasa Cuota (%)</th>
+                <th>Cuota con Interés</th>
+                <th>Factor Inflación</th>
+                <th>Valor Presente</th>
+                <th>Diferencia VP vs Cuota Base</th>
+            </tr>`;
+
+            for (let i = 0; i < numeroCuotas; i++) {
+                const factorInflacion = Math.pow(1 + inflacionMensual, i);
+                const cuotaConInteres = cuotaBase * (1 + tasasCuota[i]);
+                const valorPresente = cuotaConInteres / factorInflacion;
+                
+                totalPagar += cuotaConInteres;
+                totalValorPresente += valorPresente;
+
+                const diferenciaPorcentual = ((valorPresente - cuotaBase) / cuotaBase * 100).toFixed(2);
+                const claseColor = valorPresente < cuotaBase ? 'negative' : 'positive';
+
+                tabla += `<tr>
+                    <td>${i + 1}</td>
+                    <td>$${cuotaBase.toFixed(2)}</td>
+                    <td>${(tasasCuota[i] * 100).toFixed(2)}%</td>
+                    <td>$${cuotaConInteres.toFixed(2)}</td>
+                    <td>${factorInflacion.toFixed(4)}</td>
+                    <td>$${valorPresente.toFixed(2)}</td>
+                    <td class="${claseColor}">${diferenciaPorcentual}%</td>
+                </tr>`;
+            }
+            tabla += '</table>';
+
+            // Calcular TNA promedio de las cuotas
+            const tnaPromedio = (tasasCuota.reduce((a, b) => a + b, 0) / tasasCuota.length * 12 * 100).toFixed(2);
+            // Calcular TNA de la inflación
+            const tnaInflacion = ((Math.pow(1 + inflacionMensual, 12) - 1) * 100).toFixed(2);
+
+            let resultados = `
+                <h3>Resumen:</h3>
+                <p>Precio original: $${precio.toFixed(2)}</p>
+                <p>Total a pagar: $${totalPagar.toFixed(2)}</p>
+                <p>Valor presente total: $${totalValorPresente.toFixed(2)}</p>
+                <p>TNA promedio de cuotas: ${tnaPromedio}%</p>
+                <p>TNA equivalente inflación: ${tnaInflacion}%</p>
+                <p>Diferencia por financiación: $${(totalPagar - precio).toFixed(2)}</p>
+                <p>Diferencia VP vs Precio original: $${(totalValorPresente - precio).toFixed(2)}</p>
+                ${tabla}
+            `;
+
+            document.getElementById('resultados').innerHTML = resultados;
+        }
+
+        // Calcular automáticamente al cargar la página
+        calcular();
+    </script>
+</body>
+</html>

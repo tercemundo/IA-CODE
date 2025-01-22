@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora de Cuotas con Inflación y Valor Presente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        h1 {
+            color: #1a237e;
+            text-align: center;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            margin-bottom: 15px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #1a237e;
+            font-weight: bold;
+        }
+        input, select {
+            padding: 8px;
+            width: 200px;
+            border: 1px solid #3f51b5;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #1a237e;
+            box-shadow: 0 0 5px rgba(26,35,126,0.2);
+        }
+        button {
+            padding: 12px 24px;
+            background-color: #3f51b5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #1a237e;
+        }
+        .checkbox-group {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .checkbox-group label {
+            display: inline;
+            margin-left: 8px;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: #fff;
+        }
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #3f51b5;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+        .negative {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        .positive {
+            color: #388e3c;
+            font-weight: bold;
+        }
+        #tasasCuotas {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .resumen-box {
+            background-color: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .resumen-box h3 {
+            color: #1a237e;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calculadora de Cuotas con Inflación y Valor Presente</h1>
+    
+    <div class="input-group">
+        <label for="precio">Precio del producto:</label>
+        <input type="number" id="precio" value="100000">
+    </div>
+
+    <div class="input-group">
+        <label for="inflacion">Inflación mensual (%):</label>
+        <input type="number" id="inflacion" value="10">
+    </div>
+
+    <div class="input-group">
+        <label for="numeroCuotas">Seleccione número de cuotas:</label>
+        <select id="numeroCuotas" onchange="generarCamposCuotas()">
+            <option value="3">3 cuotas</option>
+            <option value="6" selected>6 cuotas</option>
+            <option value="12">12 cuotas</option>
+            <option value="18">18 cuotas</option>
+        </select>
+    </div>
+
+    <div class="checkbox-group">
+        <input type="checkbox" id="tasasIguales" onchange="toggleTasasIguales()">
+        <label for="tasasIguales">Aplicar la misma tasa a todas las cuotas</label>
+    </div>
+
+    <div id="tasasCuotas">
+        <!-- Los campos se generarán dinámicamente -->
+    </div>
+
+    <button onclick="calcular()">Calcular</button>
+
+    <div id="resultados" class="results"></div>
+
+    <script>
+        function generarCamposCuotas() {
+            const numeroCuotas = parseInt(document.getElementById('numeroCuotas').value);
+            const contenedor = document.getElementById('tasasCuotas');
+            const tasasIguales = document.getElementById('tasasIguales').checked;
+
+            let html = '<h3>Tasas de interés por cuota (%)</h3>';
+            
+            // Valores iniciales para cada opción de cuotas
+            const valoresIniciales = {
+                3: [5, 6, 7],
+                6: [5, 6, 7, 8, 9, 10],
+                12: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+                18: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+            };
+
+            const valores = valoresIniciales[numeroCuotas];
+            
+            for(let i = 1; i <= numeroCuotas; i++) {
+                html += `
+                    <div class="input-group">
+                        <label for="tasa${i}">Tasa Cuota ${i}:</label>
+                        <input type="number" 
+                               id="tasa${i}" 
+                               value="${valores[i-1]}"
+                               step="0.1"
+                               ${i === 1 ? 'onchange="actualizarTasas()"' : ''}
+                               ${tasasIguales && i > 1 ? 'disabled' : ''}>
+                    </div>`;
+            }
+
+            contenedor.innerHTML = html;
+            if (tasasIguales) {
+                actualizarTasas();
+            }
+            calcular();
+        }
+
+        function toggleTasasIguales() {
+            const checkbox = document.getElementById('tasasIguales');
+            const numeroCuotas = parseInt(document.getElementById('numeroCuotas').value);
+            const tasa1 = document.getElementById('tasa1').value;
+            
+            for(let i = 2; i <= numeroCuotas; i++) {
+                const tasaInput = document.getElementById(`tasa${i}`);
+                if (tasaInput) {
+                    tasaInput.disabled = checkbox.checked;
+                    if(checkbox.checked) {
+                        tasaInput.value = tasa1;
+                    }
+                }
+            }
+            
+            calcular();
+        }
+
+        function actualizarTasas() {
+            const checkbox = document.getElementById('tasasIguales');
+            if(checkbox.checked) {
+                const numeroCuotas = parseInt(document.getElementById('numeroCuotas').value);
+                const tasa1 = document.getElementById('tasa1').value;
+                for(let i = 2; i <= numeroCuotas; i++) {
+                    const tasaInput = document.getElementById(`tasa${i}`);
+                    if (tasaInput) {
+                        tasaInput.value = tasa1;
+                    }
+                }
+                calcular();
+            }
+        }
+
+        function calcular() {
+            const precio = parseFloat(document.getElementById('precio').value);
+            const inflacionMensual = parseFloat(document.getElementById('inflacion').value) / 100;
+            const numeroCuotas = parseInt(document.getElementById('numeroCuotas').value);
+            
+            // Obtener tasas de interés para cada cuota
+            const tasasCuota = [];
+            for(let i = 1; i <= numeroCuotas; i++) {
+                const tasaInput = document.getElementById(`tasa${i}`);
+                if (tasaInput) {
+                    tasasCuota.push(parseFloat(tasaInput.value) / 100);
+                }
+            }
+
+            // Calculamos el valor de la cuota base
+            const cuotaBase = precio / numeroCuotas;
+
+            let totalPagar = 0;
+            let totalValorPresente = 0;
+            let tabla = '<h2>Detalle de cuotas</h2>';
+            tabla += '<table>';
+            tabla += `<tr>
+                <th>Mes</th>
+                <th>Cuota Base</th>
+                <th>Tasa Cuota (%)</th>
+                <th>Cuota con Interés</th>
+                <th>Factor Inflación</th>
+                <th>Valor Presente</th>
+                <th>Diferencia VP vs Cuota Base</th>
+            </tr>`;
+
+            for (let i = 0; i < numeroCuotas; i++) {
+                const factorInflacion = Math.pow(1 + inflacionMensual, i);
+                const cuotaConInteres = cuotaBase * (1 + tasasCuota[i]);
+                const valorPresente = cuotaConInteres / factorInflacion;
+                
+                totalPagar += cuotaConInteres;
+                totalValorPresente += valorPresente;
+
+                const diferenciaPorcentual = ((valorPresente - cuotaBase) / cuotaBase * 100).toFixed(2);
+                const claseColor = valorPresente < cuotaBase ? 'negative' : 'positive';
+
+                tabla += `<tr>
+                    <td>${i + 1}</td>
+                    <td>$${cuotaBase.toFixed(2)}</td>
+                    <td>${(tasasCuota[i] * 100).toFixed(2)}%</td>
+                    <td>$${cuotaConInteres.toFixed(2)}</td>
+                    <td>${factorInflacion.toFixed(4)}</td>
+                    <td>$${valorPresente.toFixed(2)}</td>
+                    <td class="${claseColor}">${diferenciaPorcentual}%</td>
+                </tr>`;
+            }
+            tabla += '</table>';
+
+            // Calcular TNA promedio de las cuotas
+            const tnaPromedio = (tasasCuota.reduce((a, b) => a + b, 0) / tasasCuota.length * 12 * 100).toFixed(2);
+            // Calcular TNA de la inflación
+            const tnaInflacion = ((Math.pow(1 + inflacionMensual, 12) - 1) * 100).toFixed(2);
+
+            let resultados = `
+                <div class="resumen-box">
+                    <h3>Resumen:</h3>
+                    <p>Precio original: $${precio.toFixed(2)}</p>
+                    <p>Total a pagar: $${totalPagar.toFixed(2)}</p>
+                    <p>Valor presente total: $${totalValorPresente.toFixed(2)}</p>
+                    <p>TNA promedio de cuotas: ${tnaPromedio}%</p>
+                    <p>TNA equivalente inflación: ${tnaInflacion}%</p>
+                    <p>Diferencia por financiación: $${(totalPagar - precio).toFixed(2)}</p>
+                    <p>Diferencia VP vs Precio original: $${(totalValorPresente - precio).toFixed(2)}</p>
+                </div>
+                ${tabla}
+            `;
+
+            document.getElementById('resultados').innerHTML = resultados;
+        }
+
+        // Generar campos de cuotas al cargar la página
+        window.onload = function() {
+            generarCamposCuotas();
+        };
+    </script>
+</body>
+</html>

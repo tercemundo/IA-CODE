@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Comparación Plazo Fijo vs Dólar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Comparación Plazo Fijo vs Dólar</h2>
+        <div id="resultados"></div>
+    </div>
+
+    <script>
+        function calcular() {
+            const capitalInicial = 1000;
+            
+            // Tasas
+            const tasaPF30 = 0.03;  // 3% a 30 días
+            const tasaPF60 = 0.067; // 6.7% a 60 días
+            const tasaPF90 = 0.06;  // 6% a 90 días
+            const tasaDolar90 = 0.06; // 6% en 90 días
+            
+            // Cálculos
+            const pf30 = capitalInicial * (1 + tasaPF30);
+            const pf60 = capitalInicial * (1 + tasaPF60);
+            const pf90 = capitalInicial * (1 + tasaPF90);
+            const dolar90 = capitalInicial * (1 + tasaDolar90);
+            
+            let tabla = `
+                <table>
+                    <tr>
+                        <th>Período</th>
+                        <th>Capital Inicial</th>
+                        <th>Plazo Fijo</th>
+                        <th>Dólar</th>
+                    </tr>
+                    <tr>
+                        <td>30 días</td>
+                        <td>$${capitalInicial}</td>
+                        <td>$${pf30.toFixed(2)} (3%)</td>
+                        <td>$${capitalInicial} (sin variación)</td>
+                    </tr>
+                    <tr>
+                        <td>60 días</td>
+                        <td>$${capitalInicial}</td>
+                        <td>$${pf60.toFixed(2)} (6.7%)</td>
+                        <td>$${capitalInicial} (sin variación)</td>
+                    </tr>
+                    <tr>
+                        <td>90 días</td>
+                        <td>$${capitalInicial}</td>
+                        <td>$${pf90.toFixed(2)} (6%)</td>
+                        <td>$${dolar90.toFixed(2)} (6%)</td>
+                    </tr>
+                </table>`;
+            
+            document.getElementById('resultados').innerHTML = tabla;
+        }
+        
+        // Calcular al cargar la página
+        window.onload = calcular;
+    </script>
+</body>
+</html>
